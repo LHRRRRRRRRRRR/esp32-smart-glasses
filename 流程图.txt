@@ -1,0 +1,29 @@
+smart-glasses/
+│
+├── esp32/
+│   ├── platformio.ini
+│   ├── src/
+│   │   └── main.cpp          # Firmware: camera, WiFi, HTTP upload, LED status
+│   └── include/
+│       └── config.h           # WiFi + server config (not in git)
+│
+├── server/
+│   ├── app.py                 # Flask: routes, SSE, upload, delete, config
+│   ├── config.py              # Default config, model list, prompt
+│   ├── models.py              # SQLAlchemy models (Device, Record)
+│   ├── database.py            # DB init + session factory
+│   ├── ai_client.py           # SiliconFlow API client with retry
+│   ├── requirements.txt       # Python deps
+│   ├── templates/
+│   │   └── index.html         # Web UI (dark mode, SSE, delete, copy)
+│   ├── static/
+│   │   ├── css/
+│   │   │   └── style.css      # Dark/light theme, animations, responsive
+│   │   └── js/
+│   │       └── main.js        # SSE listener, photo CRUD, theme toggle
+│   └── photos/                # Saved photos (runtime)
+│
+├── docs/
+│   └── README.md
+│
+└── .gitignore

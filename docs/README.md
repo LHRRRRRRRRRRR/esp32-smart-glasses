@@ -2,6 +2,8 @@
 
 ESP32 photo capture → Flask backend upload → AI recognition → Database storage → Web display.
 
+Update history: see [CHANGELOG.md](../CHANGELOG.md).
+
 ## Tech Stack
 - **ESP32**: Arduino, esp_camera, HTTPClient, ArduinoJson
 - **Backend**: Python, Flask, SQLAlchemy, SQLite

@@ -5,7 +5,7 @@ ESP32 photo capture → Flask backend upload → AI recognition → Database sto
 ## Tech Stack
 - **ESP32**: Arduino, esp_camera, HTTPClient, ArduinoJson
 - **Backend**: Python, Flask, SQLAlchemy, SQLite
-- **AI**: SiliconFlow API (Qwen3-VL)
+- **AI**: DeepSeek 官方 API（`deepseek-flash` / DeepSeek-V4.1-Flash，支持图片输入）
 - **Frontend**: HTML, CSS, JS (Dark mode, SSE real-time push, OCR copy)
 
 ## Features
@@ -57,9 +57,9 @@ pip install -r requirements.txt
 ```
 
 Configure API Key (priority high to low):
-1. Set env var `SILICONFLOW_API_KEY`
-2. Copy `local_config.example.py` to `local_config.py` with real key (recommended, in .gitignore)
-3. Enter key in Web UI "API Config" (lost on restart)
+1. Set env var `DEEPSEEK_API_KEY`
+2. Enter key in Web UI "API Config" (persisted to `runtime_config.json`, survives restart, in .gitignore)
+3. Copy `local_config.example.py` to `local_config.py` with real key (in .gitignore)
 
 Start server:
 ```bash

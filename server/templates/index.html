@@ -8,75 +8,119 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
+
+        <!-- ================= Header ================= -->
+        <header class="header">
             <div class="header-top">
-                <h1>Smart Glasses Assistant</h1>
+                <div class="brand">
+                    <div class="brand-mark">&#x1F453;</div>
+                    <div class="brand-text">
+                        <h1>Smart Glasses</h1>
+                        <p class="brand-sub">ESP32 拍照 &middot; AI 识别 &middot; 实时回传</p>
+                    </div>
+                </div>
                 <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
                     <span class="icon">&#x1F319;</span>
                     <span class="label">Dark</span>
                 </button>
             </div>
-            
+
             <div class="status-bar">
                 <span class="status-dot" id="statusDot"></span>
-                <span class="status-text">Real-time monitoring - Press BOOT to capture</span>
+                <span class="status-text">Live monitoring &middot; press BOOT on the ESP32 to capture</span>
             </div>
-            
-            <div class="config-section">
-                <h3>&#x2699; API Config</h3>
-                <div class="config-row">
-                    <div class="form-group">
-                        <label>API Key</label>
-                        <input type="password" id="apiKeyInput" placeholder="Enter SiliconFlow API Key">
+
+            <div class="settings">
+                <!-- API Config -->
+                <details class="panel" open>
+                    <summary class="panel-head">
+                        <span class="panel-title"><span class="panel-ico">&#x2699;&#xFE0F;</span>API Config</span>
+                        <span class="panel-caret">&#x25BE;</span>
+                    </summary>
+                    <div class="panel-body">
+                        <div class="config-row">
+                            <div class="form-group">
+                                <label for="apiKeyInput">API Key</label>
+                                <input type="password" id="apiKeyInput" autocomplete="off"
+                                       placeholder="Enter DeepSeek API Key">
+                            </div>
+                            <div class="form-group">
+                                <label for="modelSelect">AI Model</label>
+                                <select id="modelSelect">
+                                    <option value="deepseek-flash">DeepSeek-V4.1-Flash (Recommended)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p class="hint">
+                            Key 保存在服务器本地 <code>runtime_config.json</code>（已在 .gitignore 中），重启后无需重填
+                        </p>
+                        <div class="config-actions">
+                            <button class="btn btn-primary" onclick="saveConfig()">
+                                <span class="btn-ico">&#x1F4BE;</span>Save Config
+                            </button>
+                            <button class="btn btn-ghost" onclick="resetConfig()">
+                                <span class="btn-ico">&#x21BA;</span>Reset
+                            </button>
+                        </div>
+                        <div id="configStatus" class="status-message"></div>
                     </div>
-                    <div class="form-group">
-                        <label>AI Model</label>
-                        <select id="modelSelect">
-                            <option value="Qwen/Qwen3-VL-8B-Instruct">Qwen3-VL-8B-Instruct (Recommended)</option>
-                        </select>
+                </details>
+
+                <!-- Prompt Settings -->
+                <details class="panel">
+                    <summary class="panel-head">
+                        <span class="panel-title"><span class="panel-ico">&#x1F3AF;</span>Prompt Settings</span>
+                        <span class="panel-caret">&#x25BE;</span>
+                    </summary>
+                    <div class="panel-body">
+                        <div class="preset-buttons">
+                            <button class="preset-btn" onclick="loadPreset('ocr')">OCR Recognition</button>
+                            <button class="preset-btn" onclick="loadPreset('scene')">Scene Recognition</button>
+                            <button class="preset-btn" onclick="loadPreset('describe')">Detailed Description</button>
+                            <button class="preset-btn" onclick="loadPreset('qa')">Q&amp;A Mode</button>
+                        </div>
+                        <textarea id="promptInput" class="prompt-textarea"
+                                  placeholder="Enter custom prompt..."></textarea>
+                        <div class="config-actions">
+                            <button class="btn btn-primary" onclick="savePrompt()">
+                                <span class="btn-ico">&#x1F4BE;</span>Save Prompt
+                            </button>
+                            <button class="btn btn-ghost" onclick="resetPrompt()">
+                                <span class="btn-ico">&#x21BA;</span>Reset
+                            </button>
+                        </div>
+                        <div id="promptStatus" class="status-message"></div>
                     </div>
-                </div>
-                <div class="config-actions">
-                    <button class="btn btn-primary" onclick="saveConfig()">&#x1F4BE; Save Config</button>
-                    <button class="btn btn-secondary" onclick="resetConfig()">&#x1F504; Reset</button>
-                </div>
-                <div id="configStatus" class="status-message"></div>
+                </details>
             </div>
-            
-            <div class="prompt-section">
-                <h3>&#x1F3AF; Prompt Settings</h3>
-                <div class="preset-buttons">
-                    <button class="preset-btn" onclick="loadPreset('ocr')">OCR Recognition</button>
-                    <button class="preset-btn" onclick="loadPreset('scene')">Scene Recognition</button>
-                    <button class="preset-btn" onclick="loadPreset('describe')">Detailed Description</button>
-                    <button class="preset-btn" onclick="loadPreset('qa')">Q&amp;A Mode</button>
-                </div>
-                <textarea id="promptInput" class="prompt-textarea" placeholder="Enter custom prompt..."></textarea>
-                <div class="config-actions">
-                    <button class="btn btn-primary" onclick="savePrompt()">&#x1F4BE; Save Prompt</button>
-                    <button class="btn btn-secondary" onclick="resetPrompt()">&#x1F504; Reset</button>
-                </div>
-                <div id="promptStatus" class="status-message"></div>
+        </header>
+
+        <!-- ================= Gallery ================= -->
+        <main class="gallery">
+            <div class="section-head">
+                <h2>Captured &amp; Recognized</h2>
+                <span class="count-pill" id="photoCount">0</span>
             </div>
-        </div>
-        
-        <div id="photosContainer">
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <span>Loading photos...</span>
+
+            <div id="photosContainer">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <span>Loading photos...</span>
+                </div>
             </div>
-        </div>
-        
-        <div class="footer">
-            <p>Smart Glasses Assistant v2.0 | Powered by SiliconFlow</p>
-        </div>
+        </main>
+
+        <footer class="footer">
+            <p>Smart Glasses Assistant v2.0 &middot; Powered by DeepSeek</p>
+        </footer>
     </div>
-    
+
+    <!-- ================= Lightbox ================= -->
     <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox(event)">
         <button class="lightbox-close" onclick="closeLightbox(event)">&times;</button>
         <img src="" alt="Photo" class="lightbox-content" id="lightboxImg">
     </div>
-    
+
     <script src="/static/js/main.js"></script>
 </body>
 </html>

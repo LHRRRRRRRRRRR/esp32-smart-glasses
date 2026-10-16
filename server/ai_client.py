@@ -9,10 +9,14 @@ session = requests.Session()
 FATAL_STATUS = {400, 401, 403, 404}
 
 
-def call_ai(image_bytes, prompt, model, api_key, ai_url, retries=1):
+def call_ai(image_bytes, prompt, model, api_key, ai_url, retries=1,
+            thinking=False, thinking_effort="high", max_tokens=1024):
     """调用AI API，返回识别文字。
     网络错误/限流(429)/服务端错误(5xx)自动重试 retries 次；
     密钥或参数类错误直接抛出，不浪费重试。
+    thinking: 是否开启思考模式（DeepSeek 默认开启，强度默认 high）
+    thinking_effort: low / high / max
+    max_tokens: 输出上限。思考模式的推理内容也占这个额度，给小了会截断答案
     """
     img64 = base64.b64encode(image_bytes).decode()
     
@@ -25,9 +29,13 @@ def call_ai(image_bytes, prompt, model, api_key, ai_url, retries=1):
                 {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img64}"}}
             ]
         }],
+        # 思考模式下 temperature 会被服务端忽略（不报错但无效）
         "temperature": 0.1,
-        "max_tokens": 150
+        "max_tokens": max_tokens,
+        "thinking": {"type": "enabled" if thinking else "disabled"}
     }
+    if thinking:
+        payload["reasoning_effort"] = thinking_effort
     
     headers = {
         "Authorization": f"Bearer {api_key}",

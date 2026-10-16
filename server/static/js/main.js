@@ -101,6 +101,8 @@ async function loadPhotos() {
 
 function renderPhotos() {
     const container = document.getElementById('photosContainer');
+    const countEl = document.getElementById('photoCount');
+    if (countEl) countEl.textContent = photos ? photos.length : 0;
     if (!photos || photos.length === 0) {
         container.innerHTML = '' +
             '<div class="empty-state">' +

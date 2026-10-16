@@ -6,6 +6,8 @@ venv/
 
 # 本地密钥（含真实 API Key，只保留 local_config.example.py 作模板）
 server/local_config.py
+# 网页 API Config 保存的设置（同样含真实密钥）
+server/runtime_config.json
 
 # ESP32
 esp32/.pio/

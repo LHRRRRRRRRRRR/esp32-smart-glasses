@@ -132,6 +132,12 @@ bool startCamera()
     config.frame_size = FRAMESIZE_VGA;
     config.jpeg_quality = 8;
     config.fb_count = 2;
+    // 这两项必须显式设置：camera_config_t 是未初始化的栈变量，不写就是未定义行为。
+    // 尤其 grab_mode：默认的 CAMERA_GRAB_WHEN_EMPTY 会在缓冲区满后停止采集，
+    // 加上本程序只在按键时才取帧，队列里存的会是几秒前甚至开机时的画面。
+    // CAMERA_GRAB_LATEST 会让驱动一直保留最新帧，按快门才是"现在"。
+    config.fb_location = CAMERA_FB_IN_PSRAM;
+    config.grab_mode = CAMERA_GRAB_LATEST;
 
     Serial.println("Initializing camera...");
     
@@ -159,11 +165,18 @@ bool startCamera()
         s->set_wb_mode(s, 0);
         s->set_exposure_ctrl(s, 1);
         s->set_aec2(s, 1);
-        s->set_ae_level(s, 0);
+        // ---- 暗光调优 ----
+        // 自动曝光的目标亮度往亮偏 1 档（范围 -2 ~ 2，0 是中性）
+        s->set_ae_level(s, 1);
+        // 1000/曝光寄存器：自动曝光模式下由 AEC 算法接管，这行只是给个起点
         s->set_aec_value(s, 400);
         s->set_gain_ctrl(s, 1);
         s->set_agc_gain(s, 10);
-        s->set_gainceiling(s, (gainceiling_t)2);
+        // 关键：原来写的是 (gainceiling_t)2，即 GAINCEILING_8X。
+        // 暗光下 AGC 撞到 8 倍上限后自动曝光就再也拉不亮画面，实测拍出来接近全黑。
+        // 提到 32X 给 AGC 留足余量；若噪点太夸张可降到 GAINCEILING_16X，
+        // 若还是很暗就上 GAINCEILING_64X。枚举顺序：2X/4X/8X/16X/32X/64X/128X
+        s->set_gainceiling(s, GAINCEILING_32X);
         s->set_bpc(s, 1);
         s->set_wpc(s, 1);
         s->set_raw_gma(s, 1);
@@ -251,6 +264,17 @@ void captureAndSend()
     
     ledWorking();
     unsigned long start = millis();
+
+    // 先丢掉队列里的陈旧帧，确保拿到的是按下按钮这一刻的画面。
+    // 摄像头降级到 QVGA 时 fb_count=1，CAMERA_GRAB_LATEST 不生效（要求 fb_count>1），
+    // 这个清队列循环就是唯一的保障。
+    for (int i = 0; i < 2; i++) {
+        camera_fb_t *stale = esp_camera_fb_get();
+        if (stale) {
+            esp_camera_fb_return(stale);
+        }
+    }
+
     camera_fb_t *fb = esp_camera_fb_get();
     
     if (!fb)

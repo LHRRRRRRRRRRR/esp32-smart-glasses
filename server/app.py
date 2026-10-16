@@ -5,8 +5,10 @@ import time
 import queue
 import threading
 from config import (
-    DEFAULT_API_KEY, DEFAULT_MODEL, AI_URL, DEFAULT_PROMPT,
-    UPLOAD_FOLDER, MAX_PHOTOS, AVAILABLE_MODELS
+    DEFAULT_API_KEY, FILE_API_KEY, DEFAULT_MODEL, AI_URL, DEFAULT_PROMPT,
+    UPLOAD_FOLDER, MAX_PHOTOS, AVAILABLE_MODELS,
+    THINKING_ENABLED, THINKING_EFFORT, MAX_OUTPUT_TOKENS,
+    RUNTIME_CONFIG_PATH, save_runtime_config
 )
 from ai_client import call_ai
 from database import init_db, get_session
@@ -103,7 +105,9 @@ def upload():
 
         print(f"Calling AI... Model: {current_model}")
         start = time.time()
-        text = call_ai(img, current_prompt, current_model, current_api_key, AI_URL)
+        text = call_ai(img, current_prompt, current_model, current_api_key, AI_URL,
+                       thinking=THINKING_ENABLED, thinking_effort=THINKING_EFFORT,
+                       max_tokens=MAX_OUTPUT_TOKENS)
         print(f"AI time: {time.time() - start:.2f}s")
 
         mode = "scene"
@@ -246,13 +250,27 @@ def set_config():
         current_model = model_name
         print(f"Model updated: {current_model}")
     
+    # 落到 runtime_config.json（已在 .gitignore），重启后不用重新填
+    try:
+        save_runtime_config({"api_key": current_api_key, "model": current_model})
+        print("Config saved to runtime_config.json")
+    except OSError as e:
+        print(f"Config persist failed: {e}")
+        return jsonify({"success": False, "error": f"Save failed: {e}"}), 500
+    
     return jsonify({"success": True, "model": current_model})
 
 @app.route("/reset_config")
 def reset_config():
     global current_api_key, current_model
-    current_api_key = DEFAULT_API_KEY
+    current_api_key = FILE_API_KEY
     current_model = DEFAULT_MODEL
+    # 同时删掉网页端保存的设置，否则重启后又被读回来
+    try:
+        os.remove(RUNTIME_CONFIG_PATH)
+        print("runtime_config.json removed")
+    except OSError:
+        pass
     return jsonify({"success": True, "model": current_model})
 
 @app.route("/get_prompt")

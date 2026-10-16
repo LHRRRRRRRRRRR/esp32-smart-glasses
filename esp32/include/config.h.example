@@ -1,9 +1,14 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+
 // ================= WIFI =================
 #define WIFI_SSID "你的WiFi名称"
 #define WIFI_PASS "你的WiFi密码"
+
 // ================= SERVER =================
-// 改成你运行Flask的电脑IP（Windows 用 ipconfig 查看 IPv4 地址）
-#define SERVER_URL "http://192.168.x.x:5000/upload"
+// 填运行 Flask 那台电脑的局域网 IP（Windows 用 ipconfig 查看 IPv4 地址）
+// 端口必须和 server/app.py 里的 app.run(port=...) 一致，默认是 5000
+// 注意格式："http://" 只能出现一次，写成 "http://http://..." 会导致 HTTPClient.begin() 直接失败
+#define SERVER_URL "http://192.168.1.100:5000/upload"
+
 #endif

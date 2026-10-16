@@ -12,7 +12,7 @@ smart-glasses/
 │   ├── config.py              # Default config, model list, prompt
 │   ├── models.py              # SQLAlchemy models (Device, Record)
 │   ├── database.py            # DB init + session factory
-│   ├── ai_client.py           # SiliconFlow API client with retry
+│   ├── ai_client.py           # DeepSeek API client with retry
 │   ├── requirements.txt       # Python deps
 │   ├── templates/
 │   │   └── index.html         # Web UI (dark mode, SSE, delete, copy)
